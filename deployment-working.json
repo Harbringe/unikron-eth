@@ -1,0 +1,32 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-08-14T14:25:01.312Z",
+  "deployer": "0x30Ad0c3a89D374a3C2580A97F083990bedaF5845",
+  "contracts": {
+    "usdc": "0xeF0feba656d4e871ecD9Ca329d06D2C2e25D05dC",
+    "weth": "0xfa03892d49037c5e988De9092e329Ee2573C8D07",
+    "dai": "0xf7A852417169d6979652b5283DA8232695613fBE",
+    "mevDex": "0x08eD850c7E841ab53977DC14128D2310B5Cc3D70",
+    "workingMultiDex": "0x453f802297918ddcEA3625cc10564a78073dA6Fe"
+  },
+  "tokens": {
+    "usdc": {
+      "address": "0xeF0feba656d4e871ecD9Ca329d06D2C2e25D05dC",
+      "symbol": "USDC",
+      "decimals": 6,
+      "initialSupply": "0.01"
+    },
+    "weth": {
+      "address": "0xfa03892d49037c5e988De9092e329Ee2573C8D07",
+      "symbol": "WETH",
+      "decimals": 18,
+      "initialSupply": "0.0000000000000001"
+    },
+    "dai": {
+      "address": "0xf7A852417169d6979652b5283DA8232695613fBE",
+      "symbol": "DAI",
+      "decimals": 18,
+      "initialSupply": "0.00000000000001"
+    }
+  }
+}

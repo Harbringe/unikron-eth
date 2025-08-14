@@ -1,0 +1,63 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "NetworkConfig",
+  "sourceName": "contracts/NetworkConfig.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "SEPOLIA_SUSHISWAP_ROUTER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SEPOLIA_UNISWAP_V2_ROUTER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SEPOLIA_UNISWAP_V3_ROUTER",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SEPOLIA_WETH",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610105806100206000396000f3fe6080604052348015600f57600080fd5b506004361060465760003560e01c806305bf0c4014604b578063b235af0e146081578063d8a466c114609b578063f927e7671460b5575b600080fd5b606573e592427a0aece92de3edee1f18e0157c0586156481565b6040516001600160a01b03909116815260200160405180910390f35b6065737b79995e5f793a07bc00c21412e50ecae098e7f981565b606573d9e1ce17f2641f24ae83637ab66a2cca9c378b9f81565b6065737a250d5630b4cf539739df2c5dacb4c659f2488d8156fea26469706673582212206f3b93a689e9e4c5f78c406350416e09d89ad19985d377b85dda87ddd488394464736f6c63430008140033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060465760003560e01c806305bf0c4014604b578063b235af0e146081578063d8a466c114609b578063f927e7671460b5575b600080fd5b606573e592427a0aece92de3edee1f18e0157c0586156481565b6040516001600160a01b03909116815260200160405180910390f35b6065737b79995e5f793a07bc00c21412e50ecae098e7f981565b606573d9e1ce17f2641f24ae83637ab66a2cca9c378b9f81565b6065737a250d5630b4cf539739df2c5dacb4c659f2488d8156fea26469706673582212206f3b93a689e9e4c5f78c406350416e09d89ad19985d377b85dda87ddd488394464736f6c63430008140033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

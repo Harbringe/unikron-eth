@@ -1,0 +1,367 @@
+{
+    "info": {
+        "name": "Production DEX API - Sepolia",
+        "description": "Production-ready DEX API with real token swapping and MEV protection",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3001",
+            "type": "string"
+        },
+        {
+            "key": "tokenIn",
+            "value": "0x0000000000000000000000000000000000000000",
+            "type": "string"
+        },
+        {
+            "key": "tokenOut",
+            "value": "0x0000000000000000000000000000000000000000",
+            "type": "string"
+        },
+        {
+            "key": "amount",
+            "value": "1000000000000000000",
+            "type": "string"
+        },
+        {
+            "key": "minAmountOut",
+            "value": "950000000000000000",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/health",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "health"
+                    ]
+                },
+                "description": "Check if the server is running and contracts are connected"
+            }
+        },
+        {
+            "name": "Network Info",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/network",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "network"
+                    ]
+                },
+                "description": "Get current network information and RPC status"
+            }
+        },
+        {
+            "name": "Contract Info",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/contract-info",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "contract-info"
+                    ]
+                },
+                "description": "Get deployed contract addresses and configuration"
+            }
+        },
+        {
+            "name": "Parameter Limits",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/parameters/limits",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "parameters",
+                        "limits"
+                    ]
+                },
+                "description": "Get fee and slippage parameter limits"
+            }
+        },
+        {
+            "name": "Parameter Defaults",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/parameters/defaults",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "parameters",
+                        "defaults"
+                    ]
+                },
+                "description": "Get current default fee and slippage settings"
+            }
+        },
+        {
+            "name": "Supported DEXs",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/dex/supported",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "supported"
+                    ]
+                },
+                "description": "Get list of supported DEX protocols"
+            }
+        },
+        {
+            "name": "Get DEX Quote",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"tokenIn\": \"{{tokenIn}}\",\n  \"tokenOut\": \"{{tokenOut}}\",\n  \"amount\": \"{{amount}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/dex/quote",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "quote"
+                    ]
+                },
+                "description": "Get quote from DEX for token swap"
+            }
+        },
+        {
+            "name": "Get Best Quote",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"tokenIn\": \"{{tokenIn}}\",\n  \"tokenOut\": \"{{tokenOut}}\",\n  \"amount\": \"{{amount}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/dex/best-quote",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "best-quote"
+                    ]
+                },
+                "description": "Get best quote across all supported DEXs"
+            }
+        },
+        {
+            "name": "Compare DEXs",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"tokenIn\": \"{{tokenIn}}\",\n  \"tokenOut\": \"{{tokenOut}}\",\n  \"amount\": \"{{amount}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/dex/compare",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "compare"
+                    ]
+                },
+                "description": "Compare quotes across all DEXs"
+            }
+        },
+        {
+            "name": "Execute Regular Swap",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"tokenIn\": \"{{tokenIn}}\",\n  \"tokenOut\": \"{{tokenOut}}\",\n  \"amount\": \"{{amount}}\",\n  \"minAmountOut\": \"{{minAmountOut}}\",\n  \"options\": {\n    \"preferredDex\": \"UniswapV2\",\n    \"slippageBps\": 300\n  }\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/dex/swap",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "swap"
+                    ]
+                },
+                "description": "Execute regular token swap (no MEV protection)"
+            }
+        },
+        {
+            "name": "Execute MEV-Protected Swap",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"tokenIn\": \"{{tokenIn}}\",\n  \"tokenOut\": \"{{tokenOut}}\",\n  \"amount\": \"{{amount}}\",\n  \"minAmountOut\": \"{{minAmountOut}}\",\n  \"options\": {\n    \"enableMEV\": true,\n    \"slippageBps\": 300\n  }\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/dex/swap",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "dex",
+                        "swap"
+                    ]
+                },
+                "description": "Execute MEV-protected swap with commit-reveal pattern"
+            }
+        },
+        {
+            "name": "Create Secure MEV Commitment",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"userAddress\": \"0x30Ad0c3a89D374a3C2580A97F083990bedaF5845\",\n  \"swapDetails\": {\n    \"tokenIn\": \"{{tokenIn}}\",\n    \"tokenOut\": \"{{tokenOut}}\",\n    \"amountIn\": \"{{amount}}\",\n    \"minAmountOut\": \"{{minAmountOut}}\",\n    \"deadline\": 1735689600,\n    \"feeBps\": 10,\n    \"slippageBps\": 300\n  },\n  \"userPrivateSalt\": \"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\",\n  \"userNonce\": 1\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/mev/commit",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "mev",
+                        "commit"
+                    ]
+                },
+                "description": "Create secure MEV commitment (Phase 1)"
+            }
+        },
+        {
+            "name": "Reveal and Execute MEV Swap",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"commitment\": \"0x0000000000000000000000000000000000000000000000000000000000000000\",\n  \"userPrivateSalt\": \"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/mev/reveal",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "mev",
+                        "reveal"
+                    ]
+                },
+                "description": "Reveal and execute MEV swap (Phase 2)"
+            }
+        },
+        {
+            "name": "Get MEV Status",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/mev/status/0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "mev",
+                        "status",
+                        "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    ]
+                },
+                "description": "Get status of MEV commitment"
+            }
+        },
+        {
+            "name": "Test Contract Functions",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/contract/test",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "contract",
+                        "test"
+                    ]
+                },
+                "description": "Test various contract functions and connectivity"
+            }
+        }
+    ]
+}
