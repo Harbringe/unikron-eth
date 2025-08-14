@@ -25,6 +25,7 @@
         "deploy:mainnet": "hardhat run scripts/deploy.ts --network mainnet"
     },
     "dependencies": {
+        "@openzeppelin/contracts": "^5.0.0",
         "axios": "^1.6.0",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
@@ -38,7 +39,6 @@
         "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
         "@nomicfoundation/hardhat-verify": "^2.0.0",
-        "@openzeppelin/contracts": "^5.4.0",
         "@typechain/ethers-v6": "^0.5.0",
         "@typechain/hardhat": "^9.0.0",
         "@types/chai": "^4.2.0",

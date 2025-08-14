@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./RealDexIntegration.sol";
 
 /**
  * @title MEVDex - MEV-Protected DEX with Commit-Reveal Pattern
@@ -254,8 +253,8 @@ contract MEVDex is ReentrancyGuard, Pausable, Ownable {
     }
 
     /**
-     * @notice Execute REAL swap through DEX aggregator
-     * @dev Integrates with RealDexIntegration for ACTUAL token swaps
+     * @notice Execute swap through DEX aggregator (simplified implementation)
+     * @dev In practice, this would integrate with 1inch, 0x, or other DEX aggregators
      */
     function _executeSwap(
         address tokenIn,
@@ -263,59 +262,15 @@ contract MEVDex is ReentrancyGuard, Pausable, Ownable {
         uint256 amountIn,
         uint256 minAmountOut
     ) internal returns (uint256 amountOut) {
-        // Check if we have a DEX aggregator
-        require(dexAggregator != address(0), "No DEX aggregator set");
+        // This is a simplified implementation
+        // In practice, you would:
+        // 1. Call the DEX aggregator's swap function
+        // 2. Handle the actual token swaps
+        // 3. Return the actual amount received
 
-        // Get the REAL quote from RealDexIntegration
-        RealDexIntegration dexAgg = RealDexIntegration(payable(dexAggregator));
-
-        try dexAgg.getBestQuote(tokenIn, tokenOut, amountIn) returns (
-            string memory dexName,
-            uint256 quoteAmount,
-            uint256 gasEst
-        ) {
-            // Use the REAL quote amount
-            amountOut = quoteAmount;
-
-            // Execute the REAL swap based on the best DEX
-            if (keccak256(bytes(dexName)) == keccak256(bytes("UniswapV2"))) {
-                amountOut = dexAgg.executeUniswapV2Swap(
-                    tokenIn,
-                    tokenOut,
-                    amountIn,
-                    minAmountOut,
-                    address(this)
-                );
-            } else if (
-                keccak256(bytes(dexName)) == keccak256(bytes("UniswapV3"))
-            ) {
-                amountOut = dexAgg.executeUniswapV3Swap(
-                    tokenIn,
-                    tokenOut,
-                    amountIn,
-                    minAmountOut,
-                    address(this)
-                );
-            } else {
-                // Fallback to Uniswap V2 if no valid DEX found
-                amountOut = dexAgg.executeUniswapV2Swap(
-                    tokenIn,
-                    tokenOut,
-                    amountIn,
-                    minAmountOut,
-                    address(this)
-                );
-            }
-        } catch {
-            // If quote fails, try direct swap on Uniswap V2 as fallback
-            amountOut = dexAgg.executeUniswapV2Swap(
-                tokenIn,
-                tokenOut,
-                amountIn,
-                minAmountOut,
-                address(this)
-            );
-        }
+        // For now, we'll simulate a swap with a fixed exchange rate
+        // In production, replace this with actual DEX integration
+        amountOut = (amountIn * 95) / 100; // 5% slippage simulation
 
         require(amountOut >= minAmountOut, "Insufficient output amount");
 

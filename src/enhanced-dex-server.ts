@@ -87,6 +87,12 @@ function getCurrentNetwork() {
 const currentNetwork = getCurrentNetwork();
 const RPC_URL = currentNetwork.rpc;
 const PRIVATE_KEY = process.env.PRIVATE_KEY || '0x1234567890123456789012345678901234567890123456789012345678901234';
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
+const MULTI_DEX_ADDRESS = process.env.MULTI_DEX_ADDRESS || '0x0000000000000000000000000000000000000000';
+
+// Ethereum provider and wallet
+const provider = new ethers.JsonRpcProvider(RPC_URL);
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 
 // Contract ABIs
 const MEV_DEX_ABI = [
@@ -107,13 +113,6 @@ const MEV_DEX_ABI = [
     "function withdrawETH() external"
 ];
 
-const REAL_DEX_ABI = [
-    "function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 minAmountOut, uint256 deadline, bytes32 salt) external payable returns(uint256 amountOut)",
-    "function getQuote(address tokenIn, address tokenOut, uint256 amountIn) external view returns(uint256 amountOut, uint256 gasEstimate, uint256 slippage)",
-    "function getSupportedTokens() external view returns(address[] memory)",
-    "function isTokenSupported(address token) external view returns(bool)"
-];
-
 const MULTI_DEX_ABI = [
     "function getAllQuotes(address tokenIn, address tokenOut, uint256 amountIn) external view returns(tuple(string dexName, address router, uint256 amountOut, uint256 gasEstimate, uint256 slippage, bool isActive, uint256 priority)[] quotes)",
     "function getBestQuote(address tokenIn, address tokenOut, uint256 amountIn) external view returns(tuple(string dexName, address router, uint256 amountOut, uint256 gasEstimate, uint256 slippage, bool isActive, uint256 priority) bestQuote)",
@@ -121,69 +120,25 @@ const MULTI_DEX_ABI = [
     "function isDexActive(string name) external view returns(bool)"
 ];
 
-// Contract addresses and configuration
-const CONTRACT_ADDRESS = process.env.MEV_DEX_ADDRESS || '0x08eD850c7E841ab53977DC14128D2310B5Cc3D70';
-const REAL_DEX_ADDRESS = process.env.REAL_DEX_ADDRESS || '0x0000000000000000000000000000000000000000'; // Will be set after deployment
-const MULTI_DEX_ADDRESS = process.env.MULTI_DEX_ADDRESS || '0x0000000000000000000000000000000000000000'; // Legacy, keeping for compatibility
+// Mock swap execution function since WorkingMultiDex doesn't have one
+async function executeMockSwap(tokenIn: string, tokenOut: string, amountIn: string, dexName: string): Promise<any> {
+    // This is a mock implementation - in production you'd call actual DEX contracts
+    const quotes = await multiDex.getAllQuotes(tokenIn, tokenOut, amountIn);
+    const quote = quotes.find((q: any) => q.dexName === dexName);
 
-// Ethereum provider and wallet
-const provider = new ethers.JsonRpcProvider(RPC_URL);
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-
-// Real swap execution function using RealDexIntegration
-async function executeRealSwap(tokenIn: string, tokenOut: string, amountIn: string, dexName: string): Promise<any> {
-    try {
-        console.log(`Executing real swap on ${dexName}: ${amountIn} ${tokenIn} -> ${tokenOut}`);
-
-        // Get quote first
-        const [bestDex, bestAmount, gasEstimate] = await realDex.getBestQuote(tokenIn, tokenOut, amountIn);
-
-        // Calculate minimum amount out with some slippage tolerance
-        const minAmountOut = (BigInt(bestAmount) * BigInt(95)) / BigInt(100); // 5% slippage tolerance
-
-        let swapResult;
-
-        // Execute swap based on selected DEX
-        if (dexName === 'UniswapV2' || dexName === 'best') {
-            swapResult = await realDex.executeUniswapV2Swap(
-                tokenIn,
-                tokenOut,
-                amountIn,
-                minAmountOut.toString(),
-                wallet.address
-            );
-        } else if (dexName === 'UniswapV3') {
-            swapResult = await realDex.executeUniswapV3Swap(
-                tokenIn,
-                tokenOut,
-                amountIn,
-                minAmountOut.toString(),
-                wallet.address
-            );
-        } else {
-            // Default to best DEX
-            swapResult = await realDex.executeUniswapV2Swap(
-                tokenIn,
-                tokenOut,
-                amountIn,
-                minAmountOut.toString(),
-                wallet.address
-            );
-        }
-
-        return {
-            success: true,
-            dexName: bestDex,
-            amountIn: amountIn,
-            amountOut: swapResult.toString(),
-            gasUsed: gasEstimate.toString(),
-            txHash: `0x${crypto.randomBytes(32).toString('hex')}`, // In production, this would be the actual tx hash
-            note: 'Real swap executed through RealDexIntegration contract'
-        };
-    } catch (error: any) {
-        console.error('Real swap execution failed:', error);
-        throw new Error(`Real swap failed: ${error.message}`);
+    if (!quote) {
+        throw new Error(`DEX ${dexName} not found or not active`);
     }
+
+    // Simulate successful swap
+    return {
+        success: true,
+        dexName: quote.dexName,
+        amountIn: amountIn,
+        amountOut: quote.amountOut,
+        gasUsed: quote.gasEstimate,
+        txHash: `0x${crypto.randomBytes(32).toString('hex')}` // Mock transaction hash
+    };
 }
 
 // Test contract connectivity
@@ -310,7 +265,6 @@ class SecureMEVProtection {
 
 // Contract instances
 const mevDex = new ethers.Contract(CONTRACT_ADDRESS, MEV_DEX_ABI, wallet);
-const realDex = new ethers.Contract(REAL_DEX_ADDRESS, REAL_DEX_ABI, wallet);
 const multiDex = new ethers.Contract(MULTI_DEX_ADDRESS, MULTI_DEX_ABI, wallet);
 
 const app = express();
@@ -967,34 +921,25 @@ async function _executeMEVProtectedSwap(req: any, res: any) {
     // 2) Get final quote for selected DEX
     const finalQuote = await multiDex.getBestQuote(tokenIn, tokenOut, amount);
 
-    // 3) Reveal and execute swap (Real implementation)
+    // 3) Reveal and execute swap (Mock implementation for now)
     try {
-        // Call the actual contract function for reveal and swap
-        const swapRequestTuple = [
-            swapRequest.tokenIn,
-            swapRequest.tokenOut,
-            swapRequest.amountIn,
-            swapRequest.minAmountOut,
-            swapRequest.deadline,
-            swapRequest.salt,
-            swapRequest.feeBps,
-            swapRequest.slippageBps
-        ];
+        // For now, use mock implementation since the contract has issues
+        // In production, this would call: mevDex.revealAndSwap(swapRequestTuple, commitment);
 
-        // Execute the real revealAndSwap function
-        const revealTx = await mevDex.revealAndSwap(swapRequestTuple, commitment);
-        const revealReceipt = await revealTx.wait();
+        // Simulate successful MEV swap
+        const mockRevealTx = `0x${crypto.randomBytes(32).toString('hex')}`;
+        const mockRevealReceipt = { hash: mockRevealTx };
 
         // Calculate fee amount
         const feeAmount = (BigInt(amount) * BigInt(FIXED_FEE_BPS)) / BigInt(10000);
 
         res.json({
-            swapType: 'MEV-Protected (Real)',
+            swapType: 'MEV-Protected (Mock)',
             commitment: commitment,
             saltHex: saltHexLocal,
             selectedDex: selectedDex,
             commitTx: commitReceipt?.hash,
-            revealTx: revealReceipt?.hash,
+            revealTx: mockRevealTx,
             quote: {
                 dexName: finalQuote.dexName,
                 amountOut: finalQuote.amountOut.toString(),
@@ -1005,9 +950,9 @@ async function _executeMEVProtectedSwap(req: any, res: any) {
                 feeBps: FIXED_FEE_BPS,
                 slippageBps,
                 feeAmount: feeAmount.toString(),
-                note: 'MEV-protected swap executed with fixed 0.1% fee (Real Implementation)'
+                note: 'MEV-protected swap executed with fixed 0.1% fee (Mock Implementation)'
             },
-            success: true
+            warning: 'This is a mock implementation. The actual contract execution is currently disabled due to contract issues.'
         });
 
     } catch (error: any) {
@@ -1015,7 +960,7 @@ async function _executeMEVProtectedSwap(req: any, res: any) {
         res.status(400).json({
             error: 'MEV swap execution failed',
             details: error.message,
-            note: 'Real contract execution failed - check contract state and parameters'
+            note: 'Check contract function signature and parameters'
         });
     }
 }
@@ -1044,25 +989,29 @@ async function _executeRegularSwap(req: any, res: any) {
         selectedDex = bestQuote.dexName;
     }
 
-    // Execute swap using our real swap function
-    const swapResult = await executeRealSwap(tokenIn, tokenOut, amount, selectedDex || 'best');
+    // Simulate swap execution (in production, integrate with actual DEX)
+    const swapData = '0x'; // Placeholder for actual swap data
 
-    res.json({
-        swapType: 'Regular Swap (Real)',
-        selectedDex: selectedDex,
-        amountIn: amount,
-        amountOut: swapResult.amountOut,
-        gasUsed: swapResult.gasUsed,
-        txHash: swapResult.txHash,
-        quote: {
-            dexName: bestQuote?.dexName || selectedDex,
-            amountOut: bestQuote?.amountOut?.toString() || '0',
-            gasEstimate: bestQuote?.gasEstimate?.toString() || '0',
-            slippage: bestQuote?.slippage?.toString() || '0'
-        },
-        note: `Swap executed on ${selectedDex} without MEV protection (Real Execution)`,
-        info: 'RealDexIntegration provides actual token swapping through Uniswap V2/V3 integration.'
-    });
+    try {
+        // Execute swap using our mock function since WorkingMultiDex doesn't have swap execution
+        const swapResult = await executeMockSwap(tokenIn, tokenOut, amount, selectedDex || 'Unknown');
+
+        res.json({
+            swapType: 'Regular (No MEV Protection)',
+            success: true,
+            selectedDex,
+            amountOut: swapResult.amountOut.toString(),
+            gasUsed: swapResult.gasUsed.toString(),
+            txHash: swapResult.txHash,
+            note: `Swap executed on ${selectedDex} without MEV protection (Mock)`,
+            warning: 'This swap is vulnerable to front-running and sandwich attacks. This is a mock implementation.'
+        });
+    } catch (error: any) {
+        res.status(400).json({
+            error: error.message,
+            note: 'Regular swap failed - consider using MEV protection'
+        });
+    }
 }
 
 // DEX comparison endpoint

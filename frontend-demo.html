@@ -209,13 +209,7 @@
 
         <!-- Swap Tab -->
         <div id="swap" class="tab-content active">
-            <h2>💱 Token Swap</h2>
-            <p class="description">
-                <strong>Regular Swap:</strong> Execute token swaps with real DEX integration.
-                <br>✅ <strong>DEX Quotes:</strong> Real-time quotes from multiple DEXs
-                <br>✅ <strong>Execution:</strong> Real token swapping through Uniswap V2/V3
-                <br>💰 <strong>Fixed Fee:</strong> 10 bps (0.10%) - No API needed
-            </p>
+            <h2>💱 Execute Swap</h2>
 
             <div class="form-group">
                 <label for="tokenIn">Token In (Address):</label>
@@ -275,14 +269,14 @@
 
         <!-- Secure MEV Tab -->
         <div id="secure-mev" class="tab-content">
-            <h2>🔒 Secure MEV Protection</h2>
-            <p class="description">
-                <strong>Real MEV Protection:</strong> Uses actual blockchain commitments and smart contract execution to
-                prevent front-running attacks.
-                <br>✅ <strong>Phase 1:</strong> Create commitment (real blockchain transaction)
-                <br>✅ <strong>Phase 2:</strong> Reveal and execute (real smart contract swap)
-                <br>💰 <strong>Fixed Fee:</strong> 10 bps (0.10%) - No API needed
-            </p>
+            <h2>🛡️ Secure MEV Protection</h2>
+
+            <div class="info-box">
+                <h4>🔒 How Secure MEV Works</h4>
+                <p><strong>Phase 1 (Commit):</strong> Create commitment hash with NO swap details exposed</p>
+                <p><strong>Phase 2 (Reveal):</strong> Execute swap after commitment is confirmed</p>
+                <p><strong>Security:</strong> Front-runners cannot see your swap intent!</p>
+            </div>
 
             <div class="form-group">
                 <label for="mevTokenIn">Token In (Address):</label>
