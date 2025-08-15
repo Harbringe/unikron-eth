@@ -57,22 +57,28 @@ A decentralized exchange (DEX) built on Ethereum with built-in MEV (Maximal Extr
 
 ## 🚀 Quick Start
 
-### 1. Start Local Blockchain
+### 1. Set up Environment
 ```bash
-# Start Hardhat local network
-yarn hardhat node
+# Copy environment template
+cp env.example .env
+# Edit .env with your configuration (PRIVATE_KEY, CONTRACT_ADDRESS, etc.)
 ```
 
-### 2. Deploy Contracts
+### 2. Install Dependencies
 ```bash
-# In a new terminal
-yarn deploy
+yarn install
 ```
 
 ### 3. Start Server
 ```bash
-# Update .env with deployed contract addresses
+# Start the main DEX server
 yarn dev
+
+# Or start the multi-dex server
+yarn dev:multi-dex
+
+# Or start the enhanced DEX server
+yarn dev:enhanced
 ```
 
 ## 🔧 Configuration
@@ -142,15 +148,12 @@ Complete MEV-protected swap in one call
 
 ## 🧪 Testing
 
-### Run Tests
-```bash
-yarn test
-```
+The server can be tested using the API endpoints directly. You can use tools like:
+- Postman
+- curl
+- Any HTTP client
 
-### Test Coverage
-```bash
-yarn coverage
-```
+Example API calls are documented in the endpoints section below.
 
 ## 🔒 MEV Protection Explained
 
@@ -184,17 +187,17 @@ await revealAndSwap(swapParams, commitment);
 
 ### Local Development
 ```bash
-yarn deploy
+# Start the server locally
+yarn dev
 ```
 
-### Testnet (Sepolia)
+### Production
 ```bash
-yarn deploy:sepolia
-```
+# Build the project
+yarn build
 
-### Mainnet
-```bash
-yarn deploy:mainnet
+# Start the production server
+yarn start
 ```
 
 ## 📊 Gas Optimization
@@ -218,7 +221,7 @@ The contracts are optimized for gas efficiency:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
+4. Test your changes thoroughly
 5. Submit a pull request
 
 ## 📄 License
@@ -230,7 +233,7 @@ MIT License - see LICENSE file for details
 For questions and support:
 - Create an issue in the repository
 - Check the documentation
-- Review the test files for examples
+- Review the API endpoints for usage examples
 
 ## 🔮 Future Enhancements
 

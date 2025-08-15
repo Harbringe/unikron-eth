@@ -11,18 +11,7 @@
         "start": "node dist/server.js",
         "start:multi-dex": "node dist/multi-dex-server.js",
         "start:enhanced": "node dist/enhanced-dex-server.js",
-        "compile": "hardhat compile",
-        "test": "hardhat test",
-        "test:multi-dex": "ts-node examples/multi-dex-client.ts",
-        "test:configurable": "ts-node examples/configurable-parameters-client.ts",
-        "test:enhanced": "ts-node examples/enhanced-dex-client.ts",
-        "deploy": "hardhat run scripts/deploy.ts --network localhost",
-        "deploy:multi-dex": "hardhat run scripts/deploy-multi-dex.ts --network localhost",
-        "deploy:working": "hardhat run scripts/deploy-simple.ts --network localhost",
-        "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
-        "deploy:sepolia:working": "hardhat run scripts/deploy-simple.ts --network sepolia",
-        "deploy:zksync": "hardhat run scripts/deploy.ts --network zksync",
-        "deploy:mainnet": "hardhat run scripts/deploy.ts --network mainnet"
+        "compile": "hardhat compile"
     },
     "dependencies": {
         "@openzeppelin/contracts": "^5.0.0",
@@ -34,22 +23,14 @@
         "keccak256": "^1.0.6"
     },
     "devDependencies": {
-        "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
         "@nomicfoundation/hardhat-ethers": "^3.0.0",
-        "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-        "@nomicfoundation/hardhat-verify": "^2.0.0",
         "@typechain/ethers-v6": "^0.5.0",
         "@typechain/hardhat": "^9.0.0",
-        "@types/chai": "^4.2.0",
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
-        "@types/mocha": "^9.1.0",
         "@types/node": "^20.8.10",
-        "chai": "^4.2.0",
         "hardhat": "^2.17.1",
-        "hardhat-gas-reporter": "^1.0.8",
-        "solidity-coverage": "^0.8.1",
         "ts-node": "^10.9.1",
         "typechain": "^8.3.0",
         "typescript": "^5.2.2"
