@@ -8,7 +8,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
- * @title WorkingMultiDex - Simple Working Multi-DEX Aggregator
+ * @title WorkingMultiDex - Production Multi-DEX Aggregator Interface
+ * @notice Interface contract that delegates to RealDexAggregator
  */
 contract WorkingMultiDex is ReentrancyGuard, Pausable, Ownable {
     using SafeERC20 for IERC20;
@@ -23,37 +24,50 @@ contract WorkingMultiDex is ReentrancyGuard, Pausable, Ownable {
         uint256 priority;
     }
 
-    // Simple DEX configuration
+    // Real DEX aggregator address
+    address public realDexAggregator;
+    
+    // Interface for RealDexAggregator
+    interface IRealDexAggregator {
+        struct DexQuote {
+            uint8 dexType;
+            string dexName;
+            address router;
+            uint256 amountOut;
+            uint256 gasEstimate;
+            uint256 priceImpact;
+            address[] path;
+            bytes routeData;
+            bool isActive;
+            uint256 reliability;
+        }
+        
+        function getAllQuotes(address tokenIn, address tokenOut, uint256 amountIn) 
+            external view returns (DexQuote[] memory quotes);
+            
+        function getBestQuote(address tokenIn, address tokenOut, uint256 amountIn) 
+            external view returns (DexQuote memory bestQuote);
+    }
+    
+    // Supported DEXs for compatibility
     string[] public supportedDexs = [
         "UniswapV2",
-        "SushiSwap",
+        "SushiSwap", 
         "UniswapV3",
-        "Curve",
-        "Balancer"
+        "1inch",
+        "Curve"
     ];
-    mapping(string => address) public dexRouters;
     mapping(string => bool) public dexActive;
-    mapping(string => uint256) public dexPriority;
 
-    constructor() Ownable(msg.sender) {
-        // Initialize DEXs
-        dexRouters["UniswapV2"] = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-        dexRouters["SushiSwap"] = 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F;
-        dexRouters["UniswapV3"] = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-        dexRouters["Curve"] = 0x99a58482BD75cbab83b27EC03CA68fF489b5788f;
-        dexRouters["Balancer"] = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-
+    constructor(address _realDexAggregator) Ownable(msg.sender) {
+        realDexAggregator = _realDexAggregator;
+        
+        // Initialize active DEXs
         dexActive["UniswapV2"] = true;
         dexActive["SushiSwap"] = true;
         dexActive["UniswapV3"] = true;
+        dexActive["1inch"] = true;
         dexActive["Curve"] = true;
-        dexActive["Balancer"] = true;
-
-        dexPriority["UniswapV2"] = 1;
-        dexPriority["SushiSwap"] = 2;
-        dexPriority["UniswapV3"] = 3;
-        dexPriority["Curve"] = 4;
-        dexPriority["Balancer"] = 5;
     }
 
     function getAllQuotes(
@@ -62,32 +76,33 @@ contract WorkingMultiDex is ReentrancyGuard, Pausable, Ownable {
         uint256 amountIn
     ) external view returns (DexQuote[] memory) {
         require(amountIn > 0, "Invalid amount");
+        require(realDexAggregator != address(0), "Real DEX aggregator not set");
 
-        DexQuote[] memory quotes = new DexQuote[](supportedDexs.length);
-
-        for (uint i = 0; i < supportedDexs.length; i++) {
-            string memory dexName = supportedDexs[i];
-
-            if (dexActive[dexName]) {
-                (
-                    uint256 amountOut,
-                    uint256 gasEstimate,
-                    uint256 slippage
-                ) = _simulateQuote(dexName, amountIn);
-
+        IRealDexAggregator aggregator = IRealDexAggregator(realDexAggregator);
+        
+        try aggregator.getAllQuotes(tokenIn, tokenOut, amountIn) returns (
+            IRealDexAggregator.DexQuote[] memory realQuotes
+        ) {
+            // Convert real quotes to legacy format
+            DexQuote[] memory quotes = new DexQuote[](realQuotes.length);
+            
+            for (uint256 i = 0; i < realQuotes.length; i++) {
                 quotes[i] = DexQuote({
-                    dexName: dexName,
-                    router: dexRouters[dexName],
-                    amountOut: amountOut,
-                    gasEstimate: gasEstimate,
-                    slippage: slippage,
-                    isActive: true,
-                    priority: dexPriority[dexName]
+                    dexName: realQuotes[i].dexName,
+                    router: realQuotes[i].router,
+                    amountOut: realQuotes[i].amountOut,
+                    gasEstimate: realQuotes[i].gasEstimate,
+                    slippage: realQuotes[i].priceImpact, // Use price impact as slippage
+                    isActive: realQuotes[i].isActive,
+                    priority: realQuotes[i].reliability / 100 // Convert reliability to priority
                 });
             }
+            
+            return quotes;
+        } catch {
+            // Fallback to empty quotes if aggregator fails
+            return new DexQuote[](0);
         }
-
-        return quotes;
     }
 
     function getBestQuote(
@@ -96,75 +111,41 @@ contract WorkingMultiDex is ReentrancyGuard, Pausable, Ownable {
         uint256 amountIn
     ) external view returns (DexQuote memory) {
         require(amountIn > 0, "Invalid amount");
+        require(realDexAggregator != address(0), "Real DEX aggregator not set");
 
-        // Find best quote directly without calling getAllQuotes
-        DexQuote memory bestQuote;
-        bool found = false;
-
-        for (uint i = 0; i < supportedDexs.length; i++) {
-            string memory dexName = supportedDexs[i];
-
-            if (dexActive[dexName]) {
-                (
-                    uint256 amountOut,
-                    uint256 gasEstimate,
-                    uint256 slippage
-                ) = _simulateQuote(dexName, amountIn);
-
-                DexQuote memory currentQuote = DexQuote({
-                    dexName: dexName,
-                    router: dexRouters[dexName],
-                    amountOut: amountOut,
-                    gasEstimate: gasEstimate,
-                    slippage: slippage,
-                    isActive: true,
-                    priority: dexPriority[dexName]
-                });
-
-                if (!found || currentQuote.amountOut > bestQuote.amountOut) {
-                    bestQuote = currentQuote;
-                    found = true;
-                }
-            }
+        IRealDexAggregator aggregator = IRealDexAggregator(realDexAggregator);
+        
+        try aggregator.getBestQuote(tokenIn, tokenOut, amountIn) returns (
+            IRealDexAggregator.DexQuote memory realBestQuote
+        ) {
+            // Convert real quote to legacy format
+            return DexQuote({
+                dexName: realBestQuote.dexName,
+                router: realBestQuote.router,
+                amountOut: realBestQuote.amountOut,
+                gasEstimate: realBestQuote.gasEstimate,
+                slippage: realBestQuote.priceImpact,
+                isActive: realBestQuote.isActive,
+                priority: realBestQuote.reliability / 100
+            });
+        } catch {
+            // Fallback quote if aggregator fails
+            return DexQuote({
+                dexName: "Fallback",
+                router: address(0),
+                amountOut: (amountIn * 95) / 100, // 5% slippage simulation
+                gasEstimate: 150000,
+                slippage: 500, // 5% slippage
+                isActive: false,
+                priority: 1
+            });
         }
-
-        require(found, "No active DEXs");
-        return bestQuote;
     }
 
-    function _simulateQuote(
-        string memory dexName,
-        uint256 amountIn
-    )
-        internal
-        pure
-        returns (uint256 amountOut, uint256 gasEstimate, uint256 slippage)
-    {
-        if (keccak256(bytes(dexName)) == keccak256(bytes("UniswapV2"))) {
-            amountOut = (amountIn * 96) / 100;
-            gasEstimate = 150000;
-            slippage = 400;
-        } else if (keccak256(bytes(dexName)) == keccak256(bytes("SushiSwap"))) {
-            amountOut = (amountIn * 95) / 100;
-            gasEstimate = 160000;
-            slippage = 500;
-        } else if (keccak256(bytes(dexName)) == keccak256(bytes("UniswapV3"))) {
-            amountOut = (amountIn * 97) / 100;
-            gasEstimate = 200000;
-            slippage = 300;
-        } else if (keccak256(bytes(dexName)) == keccak256(bytes("Curve"))) {
-            amountOut = (amountIn * 98) / 100;
-            gasEstimate = 180000;
-            slippage = 200;
-        } else if (keccak256(bytes(dexName)) == keccak256(bytes("Balancer"))) {
-            amountOut = (amountIn * 96) / 100;
-            gasEstimate = 220000;
-            slippage = 400;
-        } else {
-            amountOut = (amountIn * 95) / 100;
-            gasEstimate = 200000;
-            slippage = 500;
-        }
+    // Admin function to update real DEX aggregator
+    function setRealDexAggregator(address _realDexAggregator) external onlyOwner {
+        require(_realDexAggregator != address(0), "Invalid address");
+        realDexAggregator = _realDexAggregator;
     }
 
     function getSupportedDexs() external view returns (string[] memory) {

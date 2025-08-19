@@ -6,12 +6,19 @@
     "scripts": {
         "build": "tsc",
         "dev": "ts-node src/server.ts",
-        "dev:multi-dex": "ts-node src/multi-dex-server.ts",
+        "dev:multi-dex": "ts-node src/multi-dex-server.ts", 
         "dev:enhanced": "ts-node src/enhanced-dex-server.ts",
+        "dev:production": "ts-node src/production-server.ts",
         "start": "node dist/server.js",
         "start:multi-dex": "node dist/multi-dex-server.js",
         "start:enhanced": "node dist/enhanced-dex-server.js",
-        "compile": "hardhat compile"
+        "start:production": "node dist/production-server.js",
+        "compile": "hardhat compile",
+        "deploy": "hardhat run scripts/deploy-production.ts",
+        "deploy:sepolia": "hardhat run scripts/deploy-production.ts --network sepolia",
+        "deploy:mainnet": "hardhat run scripts/deploy-production.ts --network mainnet",
+        "test": "hardhat test",
+        "test:coverage": "hardhat coverage"
     },
     "dependencies": {
         "@openzeppelin/contracts": "^5.0.0",

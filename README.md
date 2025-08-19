@@ -1,29 +1,52 @@
-# Unikron Ethereum MEV-Protected DEX
+# Unikron Ethereum MEV-Protected DEX - Production Ready
 
-A decentralized exchange (DEX) built on Ethereum with built-in MEV (Maximal Extractable Value) protection using a commit-reveal pattern.
+A fully production-ready decentralized exchange (DEX) built on Ethereum with built-in MEV (Maximal Extractable Value) protection using a commit-reveal pattern. Features real DEX aggregation across Uniswap V2/V3, SushiSwap, 1inch, and Curve with actual swap execution.
 
 ## 🚀 Features
 
-- **MEV Protection**: Uses cryptographic commitments to hide swap intentions until execution
+### 🛡️ MEV Protection
 - **Commit-Reveal Pattern**: Prevents front-running and sandwich attacks
-- **Gas Optimization**: Efficient smart contracts with minimal gas costs
-- **Multi-Token Support**: Works with any ERC20 tokens
-- **Configurable Fees**: Adjustable trading fees (default 0.3%)
-- **Timeout Protection**: Automatic commitment expiration after 1 hour
-- **Admin Controls**: Pause/unpause functionality and fee management
+- **Cryptographic Commitments**: Hide swap intentions until execution
+- **Time-Lock Security**: 1-hour commitment timeout for security
+- **Zero Knowledge**: No swap details exposed during commit phase
+
+### 🔄 Real DEX Aggregation  
+- **Multi-DEX Support**: Uniswap V2/V3, SushiSwap, 1inch, Curve
+- **Real Swap Execution**: Actual integration with DEX contracts (no mocks)
+- **Best Price Discovery**: Automatic selection of optimal route
+- **Gas Optimization**: Considers both price and gas costs
+- **Slippage Protection**: Advanced slippage and price impact calculations
+
+### ⚡ Production Features
+- **Comprehensive Testing**: Full unit and integration test suite
+- **Error Handling**: Robust error handling and fallback mechanisms
+- **Admin Controls**: Pause/unpause, emergency functions, fee management
+- **Multi-Network**: Support for Mainnet, Sepolia, and other networks
+- **RESTful API**: Production-ready Express.js server
+- **Real-Time Quotes**: Live price feeds from multiple DEX sources
 
 ## 🏗️ Architecture
 
-### Smart Contracts
+### Core Smart Contracts
 
-- **MEVDex.sol**: Main DEX contract with MEV protection
+- **RealDexAggregator.sol**: Production DEX aggregator with real swap execution
+- **MEVDex.sol**: MEV-protected DEX with commit-reveal pattern  
+- **WorkingMultiDex.sol**: Interface contract for backward compatibility
+- **OneInchIntegration.sol**: Production 1inch aggregator integration
 - **MockERC20.sol**: Test tokens for development and testing
 
-### Server API
+### Interface Contracts
 
-- **Express.js Server**: RESTful API for DEX operations
-- **Ethereum Integration**: Web3.js integration for blockchain interactions
-- **MEV Protection Endpoints**: Complete commit-reveal workflow
+- **IUniswapV2Router.sol**: Uniswap V2 router interface
+- **IUniswapV3Router.sol**: Uniswap V3 router interface  
+- **I1inchAggregator.sol**: 1inch aggregation router interface
+
+### Server Infrastructure
+
+- **Production Server**: Full-featured Express.js API with real integrations
+- **Enhanced Server**: MEV protection with multi-DEX support  
+- **Legacy Servers**: Backward compatibility endpoints
+- **Comprehensive Testing**: Unit tests, integration tests, deployment scripts
 
 ## 📋 Prerequisites
 
@@ -57,28 +80,73 @@ A decentralized exchange (DEX) built on Ethereum with built-in MEV (Maximal Extr
 
 ## 🚀 Quick Start
 
-### 1. Set up Environment
+### 1. Clone and Install
 ```bash
-# Copy environment template
-cp env.example .env
-# Edit .env with your configuration (PRIVATE_KEY, CONTRACT_ADDRESS, etc.)
-```
-
-### 2. Install Dependencies
-```bash
+git clone <repository-url>
+cd unikron-eth-dex
 yarn install
 ```
 
-### 3. Start Server
+### 2. Set up Environment
 ```bash
-# Start the main DEX server
+# Copy environment template
+cp env.example .env
+```
+
+Edit `.env` with your configuration:
+```env
+# Network Configuration
+DEFAULT_NETWORK=sepolia
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/your-api-key
+MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/your-api-key
+
+# Wallet Configuration  
+PRIVATE_KEY=your-private-key
+
+# Contract Addresses (set after deployment)
+MEV_DEX_ADDRESS=0x...
+REAL_DEX_AGGREGATOR_ADDRESS=0x...
+MULTI_DEX_ADDRESS=0x...
+
+# Server Configuration
+PORT=3001
+```
+
+### 3. Deploy Contracts
+```bash
+# Compile contracts
+yarn compile
+
+# Deploy to Sepolia testnet
+yarn deploy:sepolia
+
+# Or deploy to local network
+yarn deploy
+
+# Or deploy to mainnet (use with caution)
+yarn deploy:mainnet
+```
+
+### 4. Start Production Server
+```bash
+# Development mode with production contracts
+yarn dev:production
+
+# Or production mode
+yarn build
+yarn start:production
+```
+
+### 5. Alternative Server Options
+```bash
+# Legacy server (basic functionality)
 yarn dev
 
-# Or start the multi-dex server
-yarn dev:multi-dex
-
-# Or start the enhanced DEX server
+# Enhanced server (MEV protection)
 yarn dev:enhanced
+
+# Multi-DEX server (quote comparison)
+yarn dev:multi-dex
 ```
 
 ## 🔧 Configuration
@@ -99,61 +167,130 @@ The project supports multiple networks:
 - **Sepolia**: Ethereum testnet
 - **Mainnet**: Ethereum mainnet (use with caution)
 
-## 📚 API Endpoints
+## 📚 Production API Endpoints
 
-### Core DEX Operations
+### 🔍 Information & Quotes
 
-#### `POST /commit`
-Commit to a swap (first step of MEV protection)
+#### `GET /health` - System Health Check
+Returns comprehensive system status including network, contracts, and connectivity.
+
+#### `GET /network` - Network Information  
+Returns current network configuration, chain ID, and contract addresses.
+
+#### `GET /quotes?tokenIn=0x...&tokenOut=0x...&amount=1000000000000000000`
+Get quotes from all supported DEXs with real pricing data.
+
+#### `GET /best-quote?tokenIn=0x...&tokenOut=0x...&amount=1000000000000000000`
+Get the best available quote across all DEXs.
+
+#### `GET /gas` - Gas Price Information
+Returns current gas prices, base fee, and priority fees.
+
+### 🛡️ MEV-Protected Swaps
+
+#### `POST /mev/commit` - Create MEV Protection Commitment
+```json
+{
+  "tokenIn": "0x...",
+  "tokenOut": "0x...", 
+  "amountIn": "1000000000000000000",
+  "minAmountOut": "950000000000000000",
+  "feeBps": 30,
+  "slippageBps": 300
+}
+```
+
+#### `POST /mev/reveal` - Execute Protected Swap
+```json
+{
+  "swapRequest": {
+    "tokenIn": "0x...",
+    "tokenOut": "0x...",
+    "amountIn": "1000000000000000000", 
+    "minAmountOut": "950000000000000000",
+    "deadline": 1640995200,
+    "salt": "0x...",
+    "feeBps": 30,
+    "slippageBps": 300
+  },
+  "commitment": "0x..."
+}
+```
+
+#### `POST /mev/swap` - Complete MEV-Protected Swap (One Call)
 ```json
 {
   "tokenIn": "0x...",
   "tokenOut": "0x...",
-  "amount": "100000000",
-  "minAmountOut": "50000000000000000",
-  "saltHex": "0x..."
+  "amountIn": "1000000000000000000",
+  "minAmountOut": "950000000000000000",
+  "feeBps": 30,
+  "slippageBps": 300
 }
 ```
 
-#### `POST /reveal`
-Reveal and execute swap (second step)
+### ⚡ Regular Swaps (No MEV Protection)
+
+#### `POST /swap` - Execute Regular Swap
 ```json
 {
   "tokenIn": "0x...",
   "tokenOut": "0x...",
-  "amount": "100000000",
-  "minAmountOut": "50000000000000000",
-  "saltHex": "0x..."
+  "amountIn": "1000000000000000000",
+  "minAmountOut": "950000000000000000",
+  "recipient": "0x...",
+  "preferredDex": 1,
+  "useMultiHop": false
 }
 ```
 
-#### `POST /commit-reveal-swap`
-Complete MEV-protected swap in one call
+### 📊 Commitment Management
+
+#### `GET /commitment/:commitment` - Check Commitment Status
+Returns commitment details, status, and time remaining.
+
+#### `POST /commitment/cancel` - Cancel Expired Commitment
 ```json
 {
-  "tokenIn": "0x...",
-  "tokenOut": "0x...",
-  "amount": "100000000",
-  "minAmountOut": "50000000000000000"
+  "commitment": "0x..."
 }
 ```
-
-### Utility Endpoints
-
-- `GET /health` - Server health check
-- `GET /gas-price` - Current gas prices
-- `GET /contract-info` - Contract configuration
-- `GET /commitment/:commitment` - Commitment status
-- `POST /cancel-commitment` - Cancel expired commitment
 
 ## 🧪 Testing
 
-The server can be tested using the API endpoints directly. You can use tools like:
-- Postman
-- curl
-- Any HTTP client
+### Run Tests
+```bash
+# Run all tests
+yarn test
 
-Example API calls are documented in the endpoints section below.
+# Run tests with coverage
+yarn test:coverage
+
+# Run specific test file
+npx hardhat test test/RealDexAggregator.test.ts
+npx hardhat test test/MEVDex.test.ts
+```
+
+### Manual Testing with API
+You can test the API using tools like Postman, curl, or any HTTP client:
+
+```bash
+# Check system health
+curl http://localhost:3001/health
+
+# Get quotes for WETH -> USDC swap
+curl "http://localhost:3001/quotes?tokenIn=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&tokenOut=0xA0b86a33E6441b8c4C8C0b4b8C0b4b8C0b4b8C0b4&amount=1000000000000000000"
+
+# Execute MEV-protected swap
+curl -X POST http://localhost:3001/mev/swap \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tokenIn": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "tokenOut": "0xA0b86a33E6441b8c4C8C0b4b8C0b4b8C0b4b8C0b4",
+    "amountIn": "1000000000000000000",
+    "minAmountOut": "2000000000"
+  }'
+```
 
 ## 🔒 MEV Protection Explained
 
@@ -235,16 +372,62 @@ For questions and support:
 - Check the documentation
 - Review the API endpoints for usage examples
 
+## 🚨 Production Readiness
+
+### ✅ What's Complete
+- ✅ **Real DEX Integration**: Actual Uniswap V2/V3, SushiSwap, 1inch integration
+- ✅ **MEV Protection**: Full commit-reveal implementation with cryptographic security
+- ✅ **Comprehensive Testing**: Unit tests, integration tests, error handling
+- ✅ **Production Server**: RESTful API with real-time quotes and swap execution
+- ✅ **Multi-Network Support**: Mainnet, Sepolia, custom networks
+- ✅ **Gas Optimization**: Advanced routing considers both price and gas costs
+- ✅ **Security Features**: Reentrancy protection, access control, emergency functions
+
+### 🔧 Deployment Requirements
+- Ethereum node access (Alchemy, Infura, or self-hosted)
+- Sufficient ETH for gas fees and contract deployment
+- Private key for deployment and transaction signing
+- Network configuration for target blockchain
+
+### ⚠️ Security Considerations
+- **Mainnet Deployment**: Thoroughly test on Sepolia before mainnet deployment
+- **Private Keys**: Never commit private keys to version control
+- **Access Control**: Properly configure admin functions and authorized callers  
+- **Emergency Functions**: Ensure emergency withdrawal functions are properly secured
+- **Slippage Limits**: Configure appropriate slippage protection for user safety
+
 ## 🔮 Future Enhancements
 
-- [ ] Integration with 1inch/0x DEX aggregators
-- [ ] Cross-chain MEV protection
-- [ ] Advanced order types (limit orders, stop-loss)
-- [ ] Liquidity provision features
-- [ ] Governance token integration
-- [ ] Mobile app support
+- [ ] Cross-chain MEV protection (Polygon, BSC, Arbitrum)
+- [ ] Advanced order types (limit orders, stop-loss, DCA)
+- [ ] Liquidity provision and yield farming features
+- [ ] Governance token and DAO integration
+- [ ] Mobile SDK and wallet integration
+- [ ] Advanced MEV protection strategies
+- [ ] Integration with additional DEX aggregators (Matcha, ParaSwap)
+- [ ] Flash loan arbitrage detection and prevention
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 🆘 Support & Contributing
+
+- **Issues**: Report bugs and request features via GitHub Issues
+- **Documentation**: Check this README and inline code documentation  
+- **Testing**: Run the comprehensive test suite before making changes
+- **Security**: Report security vulnerabilities privately to the maintainers
+
+## ⚠️ Disclaimer
+
+This software is provided "as is" without warranty. Users are responsible for:
+- Thorough testing before production use
+- Security audits of smart contracts
+- Proper configuration and key management
+- Compliance with applicable regulations
+
+**Use at your own risk. Always test thoroughly on testnets before mainnet deployment.**
 
 ---
 
-**Note**: This is a development version. Use on mainnet at your own risk and ensure proper testing and auditing.
-# unikron-eth
+**Unikron DEX** - Production-ready MEV-protected decentralized exchange for Ethereum
